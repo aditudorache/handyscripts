@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- -D: project.dir-->
+<!-- -D: BuildVersion-->
+<!-- -D: project.Builds-->
+<!-- -D: project.FullBuild-->
+<project name="NantBuildProject" default="build" xmlns='http://nant.sf.net/release/0.85/nant.xsd'>
+
+  <property name="NuGetPath" value="C:\ProgramData\chocolatey\bin\NuGet.exe" />
+  <fail if="${not(file::exists(NuGetPath))}">
+    <![CDATA[NuGet was not found!    
+Install chocolatey en then run: 
+choco intstall nuget.CommandLine]]>
+  </fail>
+
+  <property name="CompanyName" value="GeoDotNet" />
+  <property name="ApplicationName" value="GigHub" />
+  <property name="MajorVersion" value="1" />
+  <property name="MinorVersion" value="0" />
+
+  <property name="MSBuildPath" value="C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe" />
+  <property name="NUnitPath" value="C:\Program Files (x86)\NUnit.org\nunit-console\nunit3-console.exe" />
+  <property name="SolutionName" value="GigHub.sln" />
+
+
+  <!-- Show build parameters -->
+  <echo message="ApplicationName        = ${ApplicationName}" />
+  <echo message="project.dir            = ${project.dir}" />
+  <echo message="MajorVersion           = ${MajorVersion}" />
+  <echo message="MinorVersion           = ${MinorVersion}" />
+  <echo message="BuildVersion           = ${BuildVersion}" />
+  <echo message="project.Builds         = ${project.Builds}" />
+  <echo message="project.FullBuild      = ${project.FullBuild}" />
+  <echo message="PATH                   = ${environment::get-variable('PATH')}" />
+
+  <property name="ProjectLabel" value="${ApplicationName} ${MajorVersion}.${MinorVersion}" />
+
+  <target name="build" depends="CleanupBuildResults, RestorePackages, Build, Backup" />
+  <target name="buildAndTest" depends="CleanupBuildResults, RestorePackages, Build, NUnit, Backup" />
+  <target name="test" depends="NUnit" />
+
+  <target name="CleanupBuildResults">
+    <delete>
+      <fileset>
+        <include name="${project.dir}/NUnit*.xml" />
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="RestorePackages">
+    <exec program="${NuGetPath}" verbose="true">
+      <arg line='restore "${project.dir}/${SolutionName}"' />
+      <arg line='-ConfigFile "${project.dir}\NuGet.config"' />
+      <arg line="-NonInteractive" />
+    </exec>
+  </target>
+
+  <target name="Build">
+    <delete file="SolutionInfo.cs" />
+
+    <asminfo output="VersionInfo.cs" language="CSharp">
+      <imports>
+        <import namespace="System" />
+        <import namespace="System.Reflection" />
+      </imports>
+      <attributes>
+        <attribute type="AssemblyCompanyAttribute" value="${CompanyName}" />
+        <attribute type="AssemblyProductAttribute" value="${ProjectLabel}" />
+        <attribute type="AssemblyCopyrightAttribute" value="@${CompanyName} ${datetime::get-year(datetime::now())}" />
+        <attribute type="AssemblyTrademarkAttribute" value="" />
+        <attribute type="AssemblyCultureAttribute" value="" />
+        <attribute type="CLSCompliantAttribute" value="false" />
+        <attribute type="AssemblyVersionAttribute" value="${MajorVersion}.${MinorVersion}.${BuildVersion}.0" />
+        <attribute type="AssemblyFileVersionAttribute" value="${MajorVersion}.${MinorVersion}.${BuildVersion}.0" />
+        <attribute type="AssemblyInformationalVersionAttribute" value="${datetime::now()}" />
+      </attributes>
+    </asminfo>
+
+    <delete dir="${project.dir}\bin" />
+
+    <!-- Build with MS Build 14 (C# 6) -->
+    <exec program="${MSBuildPath}" failonerror="true">
+      <environment>
+        <variable name="MajorVersion" value="${MajorVersion}"></variable>
+        <variable name="MinorVersion" value="${MinorVersion}"></variable>
+        <variable name="BuildVersion" value="${BuildVersion}"></variable>
+      </environment>
+      <arg value="${project.dir}/${SolutionName}" />
+      <arg value="/t:Rebuild" />
+      <arg value="/p:Configuration=Release" />
+      <arg value="/p:DeployOnBuild=true" />
+      <arg value="/p:PublishProfile=ReleaseProfile" />
+      <arg value="/p:VisualStudioVersion=14.0" />
+    </exec>
+  </target>
+
+  <target name="NUnit">
+    <property name="assembly" value="GigHub"/>
+    <property name="outputpostfix" value="Test"/>
+    <call target="runnunit"/>
+  </target>
+
+  <target name="runnunit">
+      <exec program="${NUnitPath}"
+            workingdir="${project.dir}/${assembly}.Test/"
+            commandline='"bin/Release/${assembly}.Test.dll" --result="../NUnit.${assembly}.${outputpostfix}.xml;format=nunit2"'/>
+  </target>
+
+  <target name="Backup">
+
+    <if test="${project.FullBuild}">
+
+      <!-- Delete the last build -->
+      <property name="project.BuildsLatest" value="${project.Builds}/_LatestBuild" />
+      <delete>
+        <fileset basedir="${project.BuildsLatest}" defaultexcludes="false">
+          <include name="**/*" />
+        </fileset>
+      </delete>
+
+      <mkdir dir="${project.BuildsLatest}" if="${not directory::exists(project.BuildsLatest)}" />
+
+      <!-- pack everything in a zip in latest dir -->
+      <zip zipfile="${project.BuildsLatest}/${SolutionName}.${MajorVersion}.${MinorVersion}.${BuildVersion}.zip" includeemptydirs="true">
+        <fileset basedir="${project.dir}/bin" >
+          <exclude name="*.wixpdb" />
+          <include name="*.*" />
+        </fileset>
+      </zip>
+
+      <!-- Copy the zip file to the builds folder -->
+      <copy file="${project.BuildsLatest}/${SolutionName}.${MajorVersion}.${MinorVersion}.${BuildVersion}.zip" todir="${project.Builds}" />
+    </if>
+  </target>
+</project>
