@@ -67,6 +67,23 @@ go
 -- Execute script with sqlcmd. (-o is optionsl and is the result redirect for the output)
 sqlcmd -S myServer\instanceName -i C:\myScript.sql -o C:\EmpAdds.txt
 
+-- Detach/Attach script
+https://onlykishor.wordpress.com/2012/05/16/attachdetach-database-in-sql-server-using-sqlcmd/
+
+-- Detach
+USE master;  
+GO  
+EXEC sp_detach_db @dbname = N'AdventureWorks2012';  
+GO  
+
+-- Attach
+CREATE DATABASE MyAdventureWorks   
+    ON (FILENAME = 'C:\MySQLServer\AdventureWorks2012_Data.mdf'),  
+    (FILENAME = 'C:\MySQLServer\AdventureWorks2012_Log.ldf')  
+    FOR ATTACH;  
+GO  
+
+
 -- Execute scripts from inside sqlcmd
 :setvar path "c:\Temp\SqlServer"
 :r $(path)\sqlscript.sql
