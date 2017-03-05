@@ -1,11 +1,87 @@
-# The handy script tools of Adrian  
+# Wiki links
 
-### How to install
+-- To exclude the .gitignore files that are already tracked 
+--      you need to remove them from git first:
+git rm -r --cached . (or *.suo, or */bin/)
 
-Copy this folder to c:\Bin (or any other folder)
-Go to WindowsKey/Advanced system settings/Environment variables
-Edit user variable Path, add C:\Bin entry
+#Start Jenkins on port 8081
+java -jar jenkins.war --httpPort=8081
 
-Start a cmd prompt with Administrator rights
+#Export Jenkins job/project
+java -jar jenkins-cli.jar -s http://localhost:8080 get-job "GigHub 1.0" > myjob.xml
 
-type h for help for the available commands
+
+https://jcoop.io/angular-2-practice-exercises/
+
+https://medium.com/@rachelheimbach/rxjs-state-management-in-angular-2-error-handling-678deabf3331#.jnk2g6h7q
+
+-- SqlCmd wiki
+https://blog.sqlauthority.com/2013/02/08/sql-server-backup-and-restore-database-using-command-prompt-sqlcmd/
+
+
+-- ss vs oracle
+https://docs.oracle.com/cd/E10405_01/appdev.120/e10379/ss_oracle_compared.htm
+http://www.dba-oracle.com/oracle_news/2005_12_16_sql_syntax_differences.htm
+
+-- ef reverse poco generator
+https://marketplace.visualstudio.com/items?itemName=SimonHughes.EntityFrameworkReversePOCOGenerator
+
+
+-- Find all servers on this computer
+sqlcmd -L
+
+-- Connect to a database
+sqlcmd -S "localhost\SQLEXPRESS"
+
+-- Get all databases
+EXEC sp_databases
+select name from master.dbo.sysdatabases
+
+
+-- Get the backup and restore to a specific folder
+--     Give full rights to MSSQL$SQLEXPRESS to c:\Temp? (the service needs rights to read the bak file)
+--     Backup file: C:\Temp\SqlServer\Northwind.bak\Northwind.bak
+--     Restore folder: C:\Work\SQLServer\Databases
+
+D:\MSSQLDataFiles\UNTC\DB_All\DB\NORTHWND.MDF
+D:\MSSQLDataFiles\UNTC\DB_All\DB\NORTHWND_log.ldf
+
+RESTORE FILELISTONLY FROM DISK='Cuse :\Temp\SqlServer\Northwind.bak\Northwind.bak'
+
+RESTORE DATABASE Northwind FROM DISK='C:\Temp\SqlServer\Northwind.bak\Northwind.bak'
+WITH 
+   MOVE 'Northwind' TO 'C:\Work\SQLServer\Databases\Northwind.mdf',
+   MOVE 'Northwind_log' TO 'C:\Work\SQLServer\Databases\Northwind_log.ldf'
+GO
+
+RESTORE DATABASE efdemo FROM DISK='C:\Temp\SqlServer\Northwind.bak\Northwind.bak'
+WITH 
+   MOVE 'Northwind' TO 'C:\Work\SQLServer\Databases\efdemo.mdf',
+   MOVE 'Northwind_log' TO 'C:\Work\SQLServer\Databases\efdemo_log.ldf'
+GO
+
+-- Backup database from sqlcmd
+BACKUP DATABASE efdemo TO DISK='C:\Temp\SqlServer\Backups\efdemo201703051044.bak'
+go
+
+-- Execute script with sqlcmd. (-o is optionsl and is the result redirect for the output)
+sqlcmd -S myServer\instanceName -i C:\myScript.sql -o C:\EmpAdds.txt
+
+-- Execute scripts from inside sqlcmd
+:setvar path "c:\Temp\SqlServer"
+:r $(path)\sqlscript.sql
+--:r $(path)\sqlscript2.sql
+
+
+-- Metadata info for databases
+INFORMATION_SCHEMA.COLUMNS
+INFORMATION_SCHEMA.TABLES
+
+
+-- Migrate existing db 
+Enable-Migrations
+Add-Migration initial -IgnoreChanges  -- just to add the needed functionality
+Update-Database  (-Verbose, -Script)
+
+
+
