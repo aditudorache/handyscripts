@@ -101,4 +101,18 @@ Add-Migration initial -IgnoreChanges  -- just to add the needed functionality
 Update-Database  (-Verbose, -Script)
 
 
+-- git commands
+git reset --hard
+git lga, lgb
+git reabase --continue
+git mergetool
+git rebase -i HEAD~2
+git push origin vehicles:master
+
+
+
+npm install -g typings
+typings init
+typings install 
+typings install es6-promise es6-collections --ambient
 
