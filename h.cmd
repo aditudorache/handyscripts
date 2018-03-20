@@ -8,4 +8,5 @@ echo . apt-get ^<command^> [^<package_name^>] - command line package installer
 echo . npp     ^<file_name^>                - shortcut to Notepad++.exe
 echo .
 
+
 pause
