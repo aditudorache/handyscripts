@@ -1,0 +1,13 @@
+# Wiki links java
+
+-- To run the maven build on tomcat set in goals:
+tomcat7:run
+
+-- Shortcuts
+Ctrl+Shift+G    - find all occurences
+F3              - go to implementation
+
+-- Run different app.properties (for test test)
+create application-test.properties
+Run/Run configurations/Argumants (tab)/VM arguments -> -Dspring.profiles.active=test
+Run
